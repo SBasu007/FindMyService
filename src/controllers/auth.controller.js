@@ -1,0 +1,48 @@
+import { AuthService } from '../services/auth.service.js';
+import { ApiResponse } from '../utils/ApiResponse.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
+
+export const register = asyncHandler(async (req, res) => {
+  const {
+    fullName,
+    email,
+    phone,
+    password,
+    profileImageUrl,
+    address,
+    locality,
+    pincode,
+    city,
+    state,
+    latitude,
+    longitude,
+  } = req.body;
+
+  const result = await AuthService.register({
+    fullName,
+    email,
+    phone,
+    password,
+    profileImageUrl,
+    address,
+    locality,
+    pincode,
+    city,
+    state,
+    latitude,
+    longitude,
+  });
+
+  res.status(201).json(new ApiResponse(201, result, 'User registered successfully'));
+});
+
+export const login = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+  const result = await AuthService.login({ email, password });
+
+  res.status(200).json(new ApiResponse(200, result, 'Login successful'));
+});
+
+export const getMe = asyncHandler(async (req, res) => {
+  res.status(200).json(new ApiResponse(200, req.user, 'Current user profile fetched successfully'));
+});
