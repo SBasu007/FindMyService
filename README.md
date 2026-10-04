@@ -94,7 +94,7 @@ JWT_EXPIRES_IN=7d
 - **Body (JSON):**
   ```json
   {
-    "email": "jane@example.com",
+    "phone": "+1234567890",
     "password": "strongPassword123"
   }
   ```

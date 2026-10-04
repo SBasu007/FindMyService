@@ -74,14 +74,14 @@ export const AuthService = {
     return { user, token };
   },
 
-  async login({ email, password }) {
-    if (!email || !password) {
-      throw new ApiError(400, 'Email and password are required');
+  async login({ phone, password }) {
+    if (!phone || !password) {
+      throw new ApiError(400, 'Phone number and password are required');
     }
 
-    const user = await UserModel.findByEmail(email.toLowerCase().trim());
+    const user = await UserModel.findByPhoneWithPassword(phone);
     if (!user) {
-      throw new ApiError(401, 'Invalid email or password');
+      throw new ApiError(401, 'Invalid phone number or password');
     }
 
     if (!user.active) {
@@ -90,7 +90,7 @@ export const AuthService = {
 
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
-      throw new ApiError(401, 'Invalid email or password');
+      throw new ApiError(401, 'Invalid phone number or password');
     }
 
     const token = this.generateToken(user.id);

@@ -93,6 +93,18 @@ export const UserModel = {
     return result.rows[0] || null;
   },
 
+  async findByPhoneWithPassword(phone) {
+    const text = `
+      SELECT id, full_name, email, phone, password_hash, profile_image_url,
+             address, locality, pincode, city, state, latitude, longitude,
+             active, created_at, updated_at
+      FROM users
+      WHERE phone = $1
+    `;
+    const result = await query(text, [phone.trim()]);
+    return result.rows[0] || null;
+  },
+
   async findById(id) {
     const text = `
       SELECT ${SAFE_USER_COLUMNS}

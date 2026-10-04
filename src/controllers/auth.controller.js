@@ -37,8 +37,8 @@ export const register = asyncHandler(async (req, res) => {
 });
 
 export const login = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
-  const result = await AuthService.login({ email, password });
+  const { phone, password } = req.body;
+  const result = await AuthService.login({ phone, password });
 
   res.status(200).json(new ApiResponse(200, result, 'Login successful'));
 });
