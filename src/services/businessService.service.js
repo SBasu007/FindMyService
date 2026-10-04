@@ -109,6 +109,10 @@ export const BusinessServiceService = {
     return await BusinessServiceModel.getDistinctDistricts();
   },
 
+  async getServicesByDistrict(district) {
+    return await BusinessServiceModel.getServicesByDistrict(district);
+  },
+
   /**
    * Fetch all services by a business ID.
    */

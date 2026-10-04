@@ -252,3 +252,20 @@ JWT_EXPIRES_IN=7d
 - **Query Parameters:** `?activeOnly=true` (default: `true`)
 - **Description:** Retrieves all services offered by a specific business profile.
 
+### 4. Public Marketplace Discovery (`/api/v1/public`)
+
+- `GET /api/v1/public/districts` — active districts, including manually created districts.
+- `GET /api/v1/public/districts/:district/services` — services assigned to that district.
+- `GET /api/v1/public/businesses?district=Kolkata&serviceSlug=electrician` — registered businesses offering a service in a district.
+
+### 5. Admin Management (`/api/v1/admin`)
+
+The current admin UI uses these manual-management endpoints:
+
+- `GET/POST/PATCH/DELETE /api/v1/admin/districts`
+- `GET/POST /api/v1/admin/services`
+- `POST/DELETE /api/v1/admin/districts/:districtId/services/:serviceId`
+- `GET/POST /api/v1/admin/organizations`
+
+Apply the updated `db.sql` before using the new admin forms. The current project has no admin authentication middleware, so protect `/api/v1/admin` before deploying it publicly.
+

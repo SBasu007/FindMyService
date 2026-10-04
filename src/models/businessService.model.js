@@ -309,6 +309,10 @@ export const BusinessServiceModel = {
     const text = `
       SELECT DISTINCT district
       FROM (
+        SELECT d.name AS district
+        FROM districts d
+        WHERE d.active = true
+        UNION
         SELECT bs.district AS district
         FROM business_services bs
         INNER JOIN business_profiles bp ON bs.business_id = bp.id
@@ -328,6 +332,35 @@ export const BusinessServiceModel = {
 
     const result = await query(text);
     return result.rows.map((row) => row.district);
+  },
+
+  /** Retrieve active services offered by businesses in one district. */
+  async getServicesByDistrict(district) {
+    const text = `
+      SELECT DISTINCT s.id, s.name, s.slug, s.description, s.category
+      FROM district_services ds
+      INNER JOIN districts d ON d.id = ds.district_id
+      INNER JOIN services s ON s.id = ds.service_id
+      WHERE ds.active = true AND d.active = true AND s.active = true
+        AND LOWER(TRIM(d.name)) = LOWER(TRIM($1))
+      UNION
+      SELECT DISTINCT s.id, s.name, s.slug, s.description, s.category
+      FROM business_services bs
+      INNER JOIN business_profiles bp ON bs.business_id = bp.id
+      INNER JOIN services s ON bs.service_id = s.id
+      WHERE bs.active = true
+        AND bp.active = true
+        AND s.active = true
+        AND (
+          LOWER(TRIM(bs.district)) = LOWER(TRIM($1))
+          OR LOWER(TRIM(bp.city)) = LOWER(TRIM($1))
+          OR LOWER(TRIM(bp.locality)) = LOWER(TRIM($1))
+        )
+        AND LOWER(TRIM($1)) <> ''
+      ORDER BY name ASC
+    `;
+    const result = await query(text, [district]);
+    return result.rows;
   },
 
   /**
