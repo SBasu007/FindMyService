@@ -74,6 +74,33 @@ export const AuthService = {
     return { user, token };
   },
 
+  async registerBusiness({ fullName, phone, password }) {
+    if (!fullName?.trim() || !phone?.trim() || !password) {
+      throw new ApiError(400, 'Name, phone number, and password are required');
+    }
+    if (!/^\d{10}$/.test(phone.trim())) throw new ApiError(400, 'Enter a 10-digit phone number');
+    if (password.length < 6) throw new ApiError(400, 'Password must be at least 6 characters long');
+    const existingPhone = await UserModel.findByPhone(phone.trim());
+    if (existingPhone) throw new ApiError(409, 'An account with this phone number already exists');
+    const passwordHash = await bcrypt.hash(password, 10);
+    const user = await UserModel.create({
+      fullName: fullName.trim(),
+      email: `owner+${phone.trim()}@hiercrow.local`,
+      phone: phone.trim(),
+      passwordHash,
+      role: 'business',
+    });
+    return { user, token: this.generateToken(user.id) };
+  },
+
+  async loginBusiness({ phone, password }) {
+    const result = await this.login({ phone, password });
+    if (result.user.role !== 'business') {
+      throw new ApiError(403, 'This phone number is not a business account');
+    }
+    return result;
+  },
+
   async login({ phone, password }) {
     if (!phone || !password) {
       throw new ApiError(400, 'Phone number and password are required');

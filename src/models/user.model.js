@@ -2,6 +2,7 @@ import { query } from '../config/db.js';
 
 const SAFE_USER_COLUMNS = `
   id,
+  role,
   full_name,
   email,
   phone,
@@ -19,11 +20,17 @@ const SAFE_USER_COLUMNS = `
 `;
 
 export const UserModel = {
+  async countAdmins() {
+    const result = await query(`SELECT COUNT(*)::int AS count FROM users WHERE role = 'admin'`);
+    return result.rows[0]?.count || 0;
+  },
+
   async create({
     fullName,
     email,
     phone = null,
     passwordHash,
+    role = 'user',
     profileImageUrl = null,
     address = null,
     locality = null,
@@ -39,6 +46,7 @@ export const UserModel = {
         email,
         phone,
         password_hash,
+        role,
         profile_image_url,
         address,
         locality,
@@ -48,7 +56,7 @@ export const UserModel = {
         latitude,
         longitude
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
       RETURNING ${SAFE_USER_COLUMNS}
     `;
 
@@ -57,6 +65,7 @@ export const UserModel = {
       email.toLowerCase().trim(),
       phone ? phone.trim() : null,
       passwordHash,
+      role,
       profileImageUrl,
       address,
       locality,
@@ -73,7 +82,7 @@ export const UserModel = {
 
   async findByEmail(email) {
     const text = `
-      SELECT id, full_name, email, phone, password_hash, profile_image_url,
+      SELECT id, role, full_name, email, phone, password_hash, profile_image_url,
              address, locality, pincode, city, state, latitude, longitude,
              active, created_at, updated_at
       FROM users
@@ -95,7 +104,7 @@ export const UserModel = {
 
   async findByPhoneWithPassword(phone) {
     const text = `
-      SELECT id, full_name, email, phone, password_hash, profile_image_url,
+      SELECT id, role, full_name, email, phone, password_hash, profile_image_url,
              address, locality, pincode, city, state, latitude, longitude,
              active, created_at, updated_at
       FROM users
@@ -117,7 +126,7 @@ export const UserModel = {
 
   async findByIdWithPassword(id) {
     const text = `
-      SELECT id, full_name, email, password_hash, active
+      SELECT id, role, full_name, email, password_hash, active
       FROM users
       WHERE id = $1
     `;

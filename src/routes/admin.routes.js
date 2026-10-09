@@ -2,8 +2,14 @@ import { Router } from 'express';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { AdminModel } from '../models/admin.model.js';
+import { authenticateAdmin, optionalAdminAuthentication } from '../middlewares/admin.middleware.js';
+import { adminLogin, adminSignup } from '../controllers/admin-auth.controller.js';
 
 const router = Router();
+
+router.post('/auth/signup', optionalAdminAuthentication, adminSignup);
+router.post('/auth/login', adminLogin);
+router.use(authenticateAdmin);
 
 router.get('/districts', asyncHandler(async (_req, res) => {
   res.json(new ApiResponse(200, await AdminModel.listDistricts(), 'Districts retrieved successfully'));
@@ -47,6 +53,14 @@ router.delete('/districts/:districtId/services/:serviceId', asyncHandler(async (
   const removed = await AdminModel.removeService(req.params.districtId, req.params.serviceId);
   if (!removed) return res.status(404).json(new ApiResponse(404, null, 'District service assignment not found'));
   res.json(new ApiResponse(200, removed, 'Service removed from district'));
+}));
+
+router.get('/bookings', asyncHandler(async (_req, res) => {
+  res.json(new ApiResponse(200, await AdminModel.listBookings(), 'Bookings retrieved successfully'));
+}));
+
+router.get('/dashboard', asyncHandler(async (_req, res) => {
+  res.json(new ApiResponse(200, await AdminModel.dashboard(), 'Dashboard retrieved successfully'));
 }));
 
 router.get('/organizations', asyncHandler(async (_req, res) => {

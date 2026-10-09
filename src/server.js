@@ -1,12 +1,13 @@
 import app from './app.js';
 import { config } from './config/env.config.js';
-import { testDbConnection } from './config/db.js';
+import { ensureBusinessSchema, testDbConnection } from './config/db.js';
 
 const PORT = config.port;
 
 const startServer = async () => {
   // Test Neon Database connection
   await testDbConnection();
+  await ensureBusinessSchema();
 
   const server = app.listen(PORT, () => {
     console.log(`🚀 Server is running in ${config.nodeEnv} mode on http://localhost:${PORT}`);

@@ -260,12 +260,19 @@ JWT_EXPIRES_IN=7d
 
 ### 5. Admin Management (`/api/v1/admin`)
 
-The current admin UI uses these manual-management endpoints:
+Admin authentication uses a phone number and password. The first admin can sign up; after that, only an authenticated admin can create another admin account:
+
+- `POST /api/v1/admin/auth/signup` — `{ "fullName": "Admin", "phone": "9876543210", "password": "strong-password" }`
+- `POST /api/v1/admin/auth/login` — `{ "phone": "9876543210", "password": "strong-password" }`
+
+Both endpoints return a JWT. Send that token on all management requests as `Authorization: Bearer <admin-token>`.
+
+The protected admin UI uses these manual-management endpoints:
 
 - `GET/POST/PATCH/DELETE /api/v1/admin/districts`
 - `GET/POST /api/v1/admin/services`
 - `POST/DELETE /api/v1/admin/districts/:districtId/services/:serviceId`
 - `GET/POST /api/v1/admin/organizations`
 
-Apply the updated `db.sql` before using the new admin forms. The current project has no admin authentication middleware, so protect `/api/v1/admin` before deploying it publicly.
+Run the marketplace migration after deployment (or apply the updated `db.sql`) so the `users.role` column and admin tables exist.
 

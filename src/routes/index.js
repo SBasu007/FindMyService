@@ -6,6 +6,7 @@ import businessServiceRoutes from './businessService.routes.js';
 import publicRoutes from './public.routes.js';
 import adminRoutes from './admin.routes.js';
 import bookingRoutes from './booking.routes.js';
+import ownerRoutes from './owner.routes.js';
 
 const router = Router();
 
@@ -17,5 +18,6 @@ router.use('/business-services', businessServiceRoutes);
 router.use('/public', publicRoutes);
 router.use('/admin', adminRoutes);
 router.use('/bookings', bookingRoutes);
+router.use('/owner', ownerRoutes);
 
 export default router;

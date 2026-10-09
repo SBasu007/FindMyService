@@ -30,4 +30,25 @@ export const testDbConnection = async () => {
 
 export const query = (text, params) => pool.query(text, params);
 
+export async function ensureBusinessSchema() {
+  const statements = [
+    `ALTER TABLE business_profiles ADD COLUMN IF NOT EXISTS owner_user_id uuid`,
+    `ALTER TABLE business_profiles ADD COLUMN IF NOT EXISTS slug text`,
+    `ALTER TABLE business_profiles ADD COLUMN IF NOT EXISTS instagram_url text`,
+    `ALTER TABLE business_profiles ADD COLUMN IF NOT EXISTS facebook_url text`,
+    `ALTER TABLE business_profiles ADD COLUMN IF NOT EXISTS gallery_urls text[] DEFAULT '{}'`,
+    `ALTER TABLE business_profiles ADD COLUMN IF NOT EXISTS reviews jsonb DEFAULT '[]'::jsonb`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS business_profiles_owner_user_id_key ON business_profiles (owner_user_id)`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS business_profiles_slug_key ON business_profiles (slug)`,
+    `DO $$ BEGIN
+      IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'business_profiles_owner_user_id_fkey') THEN
+        ALTER TABLE business_profiles
+          ADD CONSTRAINT business_profiles_owner_user_id_fkey
+          FOREIGN KEY (owner_user_id) REFERENCES users(id) ON DELETE CASCADE;
+      END IF;
+    END $$`,
+  ];
+  for (const statement of statements) await pool.query(statement);
+}
+
 export default pool;

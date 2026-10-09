@@ -7,6 +7,7 @@ const pool = new pg.Pool({
 });
 
 const statements = [
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS role text DEFAULT 'user' NOT NULL`,
   `CREATE TABLE IF NOT EXISTS districts (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     name text NOT NULL UNIQUE,

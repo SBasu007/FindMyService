@@ -89,6 +89,59 @@ export const AdminModel = {
     return result.rows;
   },
 
+  async listBookings() {
+    const result = await query(`
+      SELECT b.id, b.status, b.booking_date, b.start_time, b.quoted_price, b.final_price, b.created_at,
+        u.full_name AS customer_name, u.phone AS customer_phone,
+        bp.business_name, bp.slug AS business_slug,
+        s.name AS service_name,
+        COALESCE(bs.district, bp.city) AS district,
+        bp.state
+      FROM bookings b
+      JOIN users u ON u.id = b.user_id
+      JOIN business_profiles bp ON bp.id = b.business_id
+      LEFT JOIN business_services bs ON bs.id = b.business_service_id
+      LEFT JOIN services s ON s.id = bs.service_id
+      ORDER BY b.created_at DESC
+    `);
+    return result.rows;
+  },
+
+  async dashboard() {
+    const [totals, byState, byService, recent] = await Promise.all([
+      query(`SELECT status, COUNT(*)::int AS count FROM bookings GROUP BY status`),
+      query(`
+        SELECT COALESCE(NULLIF(TRIM(bp.state), ''), 'Unknown') AS state, COUNT(*)::int AS bookings
+        FROM bookings b
+        JOIN business_profiles bp ON bp.id = b.business_id
+        GROUP BY 1
+        ORDER BY bookings DESC, state
+      `),
+      query(`
+        SELECT COALESCE(s.name, 'Unassigned') AS service, COUNT(*)::int AS bookings
+        FROM bookings b
+        LEFT JOIN business_services bs ON bs.id = b.business_service_id
+        LEFT JOIN services s ON s.id = bs.service_id
+        GROUP BY 1
+        ORDER BY bookings DESC, service
+      `),
+      this.listBookings(),
+    ]);
+    const counts = Object.fromEntries(totals.rows.map((row) => [row.status, row.count]));
+    const all = totals.rows.reduce((sum, row) => sum + row.count, 0);
+    return {
+      totals: {
+        all,
+        pending: counts.pending || 0,
+        confirmed: (counts.confirmed || 0) + (counts.accepted || 0),
+        completed: counts.completed || 0,
+      },
+      byState: byState.rows,
+      byService: byService.rows,
+      recent: recent.slice(0, 8),
+    };
+  },
+
   async createOrganization(input) {
     const client = await pool.connect();
     try {

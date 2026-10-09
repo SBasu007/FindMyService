@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { BusinessServiceService } from '../services/businessService.service.js';
+import { OwnerModel } from '../models/owner.model.js';
 
 const router = Router();
 
@@ -19,6 +20,17 @@ router.get('/districts/:district/services', asyncHandler(async (req, res) => {
 
   const services = await BusinessServiceService.getServicesByDistrict(district);
   res.status(200).json(new ApiResponse(200, services, 'Services retrieved successfully'));
+}));
+
+router.get('/sites/:slug', asyncHandler(async (req, res) => {
+  const site = await OwnerModel.findPublicBySlug(req.params.slug);
+  if (!site) return res.status(404).json(new ApiResponse(404, null, 'Business page not found'));
+  res.json(new ApiResponse(200, site, 'Business page retrieved successfully'));
+}));
+
+router.post('/sites/:slug/book', asyncHandler(async (req, res) => {
+  const booking = await OwnerModel.createBooking({ slug: req.params.slug, ...req.body });
+  res.status(201).json(new ApiResponse(201, booking, 'Booking request sent'));
 }));
 
 router.get('/businesses', asyncHandler(async (req, res) => {
